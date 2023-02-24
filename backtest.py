@@ -2,7 +2,12 @@ from backtesting import Backtest, Strategy
 from backtesting.lib import crossover
 from backtesting.test import SMA, GOOG
 
-# create backtest class
+"""
+# set user inputted variables 
+commission = .003
+
+
+# SMA strategy
 class mySMAStrategy(Strategy):
     def init(self):
         price = self.data.Close
@@ -15,7 +20,22 @@ class mySMAStrategy(Strategy):
         elif crossover(self.ma2, self.ma1):
             self.sell()
 
-backtest = Backtest(GOOG, mySMAStrategy, commission = 0.002, exclusive_orders=True)
+backtest = Backtest(GOOG, mySMAStrategy, commission = commission, exclusive_orders=True)
 stats = backtest.run()
 
 print(stats)
+
+"""
+
+import pandas as pd 
+import yfinance as yf
+import matplotlib.pyplot as plt
+
+# import data from wikipedia
+tickers = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
+
+# get list of all tickers 
+tickers = tickers.Symbol.to_list()
+
+# replace . with -
+tickers = [i.replace(".", "-") for i in tickers]
