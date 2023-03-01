@@ -93,5 +93,3 @@ Profits
 wins = [i for i in Profits if i >0]
 len(wins)/ len(Profits)
 
-
-movingAverageCalc(tickers[0])
