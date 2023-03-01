@@ -2,15 +2,54 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from tkcalendar import DateEntry
+import yfinance as yf
+import pandas as pd
+import numpy as np 
+import datetime
 
 ########################3
 #Logic
 
 # button pressed
+# exception handling variable 
+exception = "Error:/n"
 def enter_data():
-    # get security
+
+    # start date
+    startDate = startCal.get_date()
+    print(startDate)
+
+    # end date
+    endDate = endCal.get_date()
+    print(endDate)
+
+    # show sandp
+    showSandP = sandpStatus.get()
+    print(showSandP)
+
+    # moving averages 
+    ma1 = ma1Entry.get()
+    ma2 = ma2Entry.get()
+    # make sure mas are values
+    try:
+        ma1 = int(ma1)
+        ma2 = int(ma2)
+    except:
+        exception += "There was a problem with the moving averages. Make sure to enter integers./n"
+    
+    # get security info 
     security = securityEntry.get().upper()
     print(security)
+    try:
+        df = yf.download(security, start=startDate, end=endDate)
+        print(df.head)
+    except:
+        exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
+
+    # strategy info
+    strategy = clicked.get()
+    print(strategy)
+
 
 #####################
 # GUI
@@ -38,20 +77,20 @@ strategyLabel.grid(row = 0, column=1)
 
 # enter security and select strategy
 securityEntry = tk.Entry(infoFrame)
-options = StringVar()
-options.set("Strategy")
-strategySelect = OptionMenu(infoFrame, options, "RSI", "MA Crossover", "MA")
+clicked = StringVar()
+clicked.set("Plot Returns")
+strategySelect = OptionMenu(infoFrame, clicked, "RSI", "MA Crossover", "MA")
 securityEntry.grid(row=1, column=0)
 strategySelect.grid(row=1,column=1)
 
 # start and end date calendars with labels
 startLabel = tk.Label(infoFrame, text = "Start Date")
 startLabel.grid(row=2, column=0)
-endLabel = tk.Label(infoFrame, text = "Start Date")
+endLabel = tk.Label(infoFrame, text = "End Date")
 endLabel.grid(row=2, column=1)
-startCal = DateEntry(infoFrame, selectmode= "day", year=2021, month=12, day=31)
+startCal = DateEntry(infoFrame, selectmode= "day", year=2019, month=1, day=1)
 startCal.grid(row=3, column=0)
-endCal = DateEntry(infoFrame, selectmode= "day", year=2019, month=1, day=1)
+endCal = DateEntry(infoFrame, selectmode= "day", year=2021, month=12, day=31)
 endCal.grid(row=3, column=1)
 
 # moving average inputs
