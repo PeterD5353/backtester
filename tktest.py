@@ -8,7 +8,6 @@ import numpy as np
 import datetime
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 # exception handling variable 
