@@ -38,7 +38,7 @@ def RSIcalc(asset, start, end):
 def movingAverageCalc(asset, start, end, ma1, ma2):
     try:
         df = yf.download(asset, start=start, end=end)
-        df.to_csv("pre.csv")
+        
     except:
         exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
     df["MA" + str(ma1)] = df['Adj Close'].rolling(window=ma1).mean()
@@ -49,7 +49,8 @@ def movingAverageCalc(asset, start, end, ma1, ma2):
 
     df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
     df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
-    df.to_csv("post.csv")
+    
+    df = df.dropna()
     return df
 
 # MA
@@ -66,6 +67,7 @@ def movingAverage(asset, start, end, ma1):
     df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
     df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
 
+    df = df.dropna()
     return df
 
 # MACD
@@ -92,14 +94,14 @@ def MACD(asset, start, end, ma1, ma2):
 def getSignals(df):
     Buying_dates = []
     Selling_dates = []
-
+"""
     for i in range(len(df)):
         if df["Buy"].iloc[i] == "Yes": 
             Buying_dates.append(df.iloc[i+1].name)
         elif df["Buy"].iloc[i] == "Sell":
             Selling_dates.append(df.iloc[i+1].name)
     return Buying_dates, Selling_dates
-
+"""
 ########################
 #GUI Logic
 
@@ -145,26 +147,26 @@ def enter_data():
 
     # run selected strategy 
     if strategy == "RSI":
-        frame = RSIcalc(security, startDate, endDate)
-        buy, sell = getSignals(frame)
+        data = RSIcalc(security, startDate, endDate)
+        buy, sell = getSignals(data)
     elif strategy == "MA Crossover":
-        frame = movingAverageCalc(security, startDate, endDate, ma1, ma2)
-        buy, sell = getSignals(frame)
+        data = movingAverageCalc(security, startDate, endDate, ma1, ma2)
+        buy, sell = getSignals(data)
     elif strategy == "MA":
-        frame = movingAverage(security, startDate, endDate, ma1)
-        buy, sell = getSignals(frame)
+        data = movingAverage(security, startDate, endDate, ma1)
+        buy, sell = getSignals(data)
     elif strategy == "MACD":
-        frame = MACD(security, startDate, endDate, ma1)
-        buy, sell = getSignals(frame)
+        data = MACD(security, startDate, endDate, ma1)
+        buy, sell = getSignals(data)
 
-    df
-    """
+    
+    
     # plot 
     plt.figure(figsize=(12,5))
-    plt.scatter(frame.loc[buy].index, frame.loc[buy]['Adj Close'], marker = '^', c='g')
-    plt.scatter(frame.loc[sell].index, frame.loc[buy]['Adj Close'], marker = 'v', c='r')
-    plt.plot(frame['Adj Close'], alpha=.07)
-    """
+    plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
+    plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
+    plt.plot(data['Adj Close'], alpha=.07)
+    
 #####################
 # GUI Elements
 root = tk.Tk()
