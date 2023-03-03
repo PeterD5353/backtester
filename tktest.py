@@ -78,19 +78,19 @@ def MACD(asset, start, end, ma1, ma2):
         df = yf.download(asset, start=start, end=end)
     except:
         exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
-    df["EMA" + str(ma1)] = df['Adj Close'].emw(span=ma1).mean()
-    df["EMA" + str(ma2)] = df['Adj Close'].emw(span=ma2).mean()
+    df["EMA" + str(ma1)] = df['Adj Close'].ewm(span=ma1).mean()
+    df["EMA" + str(ma2)] = df['Adj Close'].ewm(span=ma2).mean()
 
     df['MACD Line'] = df["EMA" + str(ma1)] - df["EMA" + str(ma2)]
     df['Signal Line'] = df['MACD Line'].ewm(span=9).mean()
-
-    df = df.dropna()
 
     df['Signal'] = np.where(df['MACD Line'] > df['Signal Line'], 1, 0)
     df['Position'] = df['Signal'].diff()
 
     df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
     df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
+
+    return df
 
 # get buying and selling dates 
 def getSignals(df):
@@ -156,9 +156,14 @@ def enter_data():
         data = movingAverage(security, startDate, endDate, ma1)
         buy, sell = getSignals(data)
     elif strategy == "MACD":
-        data = MACD(security, startDate, endDate, ma1)
+        data = MACD(security, startDate, endDate, ma1, ma2)
         buy, sell = getSignals(data)
 
+    # make lists the same size
+    if len(buy) > len(sell):
+        sell.append(df.iloc[-1].name)
+    elif len(sell) > len(buy):
+        buy.append(df.iloc[1].name)
     
     
     # plot 
