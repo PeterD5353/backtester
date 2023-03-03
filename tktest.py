@@ -8,9 +8,11 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 
+# exception handling variable 
+exception = "Error:'/n'"
 #################
 # strategy functions 
-
+"""
 #RSI
 def RSIcalc(asset, start, end):
     try:
@@ -33,7 +35,7 @@ def RSIcalc(asset, start, end):
     df.loc[(df['Adj Close'] > df['MA200']) & (df['RSI'] < 30), 'Buy'] = "Yes"
     df.loc[(df['Adj Close'] < df['MA200']) | (df['RSI'] > 30), 'Buy'] = "No"
     return df
-
+"""
 # MA Crossover
 def movingAverageCalc(asset, start, end, ma1, ma2):
     try:
@@ -94,20 +96,18 @@ def MACD(asset, start, end, ma1, ma2):
 def getSignals(df):
     Buying_dates = []
     Selling_dates = []
-"""
+
     for i in range(len(df)):
         if df["Buy"].iloc[i] == "Yes": 
-            Buying_dates.append(df.iloc[i+1].name)
+            Buying_dates.append(df.iloc[i].name)
         elif df["Buy"].iloc[i] == "Sell":
-            Selling_dates.append(df.iloc[i+1].name)
+            Selling_dates.append(df.iloc[i].name)
     return Buying_dates, Selling_dates
-"""
+
 ########################
 #GUI Logic
 
 # button pressed
-# exception handling variable 
-exception = "Error:/n"
 def enter_data():
 
     # start date
@@ -146,10 +146,10 @@ def enter_data():
     print(strategy)
 
     # run selected strategy 
-    if strategy == "RSI":
-        data = RSIcalc(security, startDate, endDate)
-        buy, sell = getSignals(data)
-    elif strategy == "MA Crossover":
+    #if strategy == "RSI":
+    #    data = RSIcalc(security, startDate, endDate)
+    #    buy, sell = getSignals(data)
+    if strategy == "MA Crossover":
         data = movingAverageCalc(security, startDate, endDate, ma1, ma2)
         buy, sell = getSignals(data)
     elif strategy == "MA":
@@ -166,6 +166,7 @@ def enter_data():
     plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
     plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
     plt.plot(data['Adj Close'], alpha=.07)
+    
     
 #####################
 # GUI Elements
@@ -195,7 +196,7 @@ strategyLabel.grid(row = 0, column=1)
 securityEntry = tk.Entry(infoFrame)
 clicked = StringVar()
 clicked.set("Plot Returns")
-strategySelect = OptionMenu(infoFrame, clicked, "RSI", "MA Crossover", "MA")
+strategySelect = OptionMenu(infoFrame, clicked, "MACD", "MA Crossover", "MA")
 securityEntry.grid(row=1, column=0)
 strategySelect.grid(row=1,column=1)
 
