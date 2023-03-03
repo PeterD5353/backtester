@@ -161,17 +161,29 @@ def enter_data():
 
     # make lists the same size
     if len(buy) > len(sell):
-        sell.append(df.iloc[-1].name)
+        buy.pop()
     elif len(sell) > len(buy):
-        buy.append(df.iloc[1].name)
+        sell.pop()
     
     
     # plot 
     plt.figure(figsize=(12,5))
     plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
     plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
-    plt.plot(data['Adj Close'], alpha=.07)
+    plt.plot(data['Adj Close'], alpha=.07, label=security)
+
+    # if checkbox is selected, plot s&p
+    if showSandP == "Show S&P":
+        dfSANDP = yf.download('SPY', start=startDate, end=endDate)
+        plt.plot(dfSANDP['Adj Close'], alpha = .01, label="S&P")
+        plt.legend()
+
+    # calculate profits
+    Profits = (data.loc[sell].Open.values - data.loc[buy].Open.values)/data.loc[buy].Open.values
     
+    # winning rate 
+    wins = [i for i in Profits if i >0]
+    len(wins)/ len(Profits)
     
 #####################
 # GUI Elements
@@ -200,7 +212,7 @@ strategyLabel.grid(row = 0, column=1)
 # enter security and select strategy
 securityEntry = tk.Entry(infoFrame)
 clicked = StringVar()
-clicked.set("Plot Returns")
+clicked.set("MA")
 strategySelect = OptionMenu(infoFrame, clicked, "MACD", "MA Crossover", "MA")
 securityEntry.grid(row=1, column=0)
 strategySelect.grid(row=1,column=1)
@@ -232,6 +244,12 @@ sandpCheck = tk.Checkbutton(frame, text="Show S&P 500 return", variable=sandpSta
 sandpCheck.grid(row=1,column=0)
 runButton = tk.Button(frame, text = "Show Results", command=enter_data)
 runButton.grid(row=2,column=0)
+
+# show graph 
+
+
+# show profit and win rate
+
 
 root.mainloop()
 
