@@ -6,9 +6,102 @@ import yfinance as yf
 import pandas as pd
 import numpy as np 
 import datetime
+import matplotlib.pyplot as plt
 
-########################3
-#Logic
+#################
+# strategy functions 
+
+#RSI
+def RSIcalc(asset, start, end):
+    try:
+        df = yf.download(asset, start=start, end=end)
+    except:
+        exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
+    df['MA200'] = df['Adj Close'].rolling(window=200).mean()
+    df['price change'] = df['Adj Close'].pct_change()
+
+    df["Upmove"] = df['price change'].apply(lambda x: x if x > 0 else 0)
+    df['Downmove'] = df['price change'].apply(lambda x: abs(x) if x < 0 else 0)
+
+    df['avg Up'] = df['Upmove'].ewm(span=19).mean()
+    df['avg Down'] = df['Downmove'].ewm(span=19).mean()
+
+    df = df.dropna()
+
+    df['RS'] = df['avg Up'] / df['avg Down']
+    df['RSI'] = df['RS'].apply(lambda x: 100-(100/(x+1)))
+    df.loc[(df['Adj Close'] > df['MA200']) & (df['RSI'] < 30), 'Buy'] = "Yes"
+    df.loc[(df['Adj Close'] < df['MA200']) | (df['RSI'] > 30), 'Buy'] = "No"
+    return df
+
+# MA Crossover
+def movingAverageCalc(asset, start, end, ma1, ma2):
+    try:
+        df = yf.download(asset, start=start, end=end)
+        df.to_csv("pre.csv")
+    except:
+        exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
+    df["MA" + str(ma1)] = df['Adj Close'].rolling(window=ma1).mean()
+    df["MA" + str(ma2)] = df['Adj Close'].rolling(window=ma2).mean()
+
+    df['Signal'] = np.where(df["MA" + str(ma1)] > df["MA" + str(ma2)], 1, 0)
+    df['Position'] = df['Signal'].diff()
+
+    df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
+    df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
+    df.to_csv("post.csv")
+    return df
+
+# MA
+def movingAverage(asset, start, end, ma1):
+    try:
+        df = yf.download(asset, start=start, end=end)
+    except:
+        exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
+    df["MA" + str(ma1)] = df['Adj Close'].rolling(window=ma1).mean()
+
+    df['Signal'] = np.where(df["MA" + str(ma1)] > df['Adj Close'], 1, 0)
+    df['Position'] = df['Signal'].diff()
+
+    df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
+    df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
+
+    return df
+
+# MACD
+def MACD(asset, start, end, ma1, ma2):
+    try:
+        df = yf.download(asset, start=start, end=end)
+    except:
+        exception += "Make sure to input a valid ticker symbol./n Make sure Start date is before End Date./n"
+    df["EMA" + str(ma1)] = df['Adj Close'].emw(span=ma1).mean()
+    df["EMA" + str(ma2)] = df['Adj Close'].emw(span=ma2).mean()
+
+    df['MACD Line'] = df["EMA" + str(ma1)] - df["EMA" + str(ma2)]
+    df['Signal Line'] = df['MACD Line'].ewm(span=9).mean()
+
+    df = df.dropna()
+
+    df['Signal'] = np.where(df['MACD Line'] > df['Signal Line'], 1, 0)
+    df['Position'] = df['Signal'].diff()
+
+    df.loc[(df['Position'] == 1), 'Buy'] = "Yes"
+    df.loc[(df['Position'] == -1), 'Buy'] = "Sell"
+
+# get buying and selling dates 
+def getSignals(df):
+    Buying_dates = []
+    Selling_dates = []
+
+    for i in range(len(df)):
+        if df["Buy"].iloc[i] == "Yes": 
+            Buying_dates.append(df.iloc[i+1].name)
+        elif df["Buy"].iloc[i] == "Sell":
+            Selling_dates.append(df.iloc[i+1].name)
+    return Buying_dates, Selling_dates
+
+########################
+#GUI Logic
 
 # button pressed
 # exception handling variable 
@@ -50,9 +143,30 @@ def enter_data():
     strategy = clicked.get()
     print(strategy)
 
+    # run selected strategy 
+    if strategy == "RSI":
+        frame = RSIcalc(security, startDate, endDate)
+        buy, sell = getSignals(frame)
+    elif strategy == "MA Crossover":
+        frame = movingAverageCalc(security, startDate, endDate, ma1, ma2)
+        buy, sell = getSignals(frame)
+    elif strategy == "MA":
+        frame = movingAverage(security, startDate, endDate, ma1)
+        buy, sell = getSignals(frame)
+    elif strategy == "MACD":
+        frame = MACD(security, startDate, endDate, ma1)
+        buy, sell = getSignals(frame)
 
+    df
+    """
+    # plot 
+    plt.figure(figsize=(12,5))
+    plt.scatter(frame.loc[buy].index, frame.loc[buy]['Adj Close'], marker = '^', c='g')
+    plt.scatter(frame.loc[sell].index, frame.loc[buy]['Adj Close'], marker = 'v', c='r')
+    plt.plot(frame['Adj Close'], alpha=.07)
+    """
 #####################
-# GUI
+# GUI Elements
 root = tk.Tk()
 
 root.geometry("1200x800")
