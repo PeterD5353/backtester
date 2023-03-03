@@ -6,9 +6,10 @@ import yfinance as yf
 import pandas as pd
 import numpy as np 
 import datetime
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+
 
 # exception handling variable 
 exception = "Error:'/n'"
@@ -169,19 +170,17 @@ def enter_data():
     
     
     # plot 
-    f = Figure(figsize=(12,5))
-    a = f.add_subplot(111)
-    #plt.figure(figsize=(12,5))
-    a.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
-    a.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
-    a.plot(data['Adj Close'], alpha=.07, label=security)
+    plt.figure(figsize=(12,5))
+    plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
+    plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
+    plt.plot(data['Adj Close'], alpha=.07, label=security)
 
 
     # if checkbox is selected, plot s&p
     if showSandP == "Show S&P":
         dfSANDP = yf.download('SPY', start=startDate, end=endDate)
-        a.plot(dfSANDP['Adj Close'], alpha = .01, label="S&P")
-        a.legend()
+        plt.plot(dfSANDP['Adj Close'], alpha = .01, label="S&P")
+        plt.legend()
 
     # calculate profits
     Profits = (data.loc[sell].Open.values - data.loc[buy].Open.values)/data.loc[buy].Open.values
@@ -191,9 +190,9 @@ def enter_data():
     len(wins)/ len(Profits)
 
     # show graph 
-    chart = FigureCanvasTkAgg(a, infoFrame)
-    chart.show()
-    chart.grid(row=3, column=0)
+    plt.show()
+    #plt.savefig("plot.png")
+    
     
 #####################
 # GUI Elements
@@ -256,7 +255,6 @@ runButton = tk.Button(frame, text = "Show Results", command=enter_data)
 runButton.grid(row=2,column=0)
 
 # show profit and win rate
-
 
 root.mainloop()
 
