@@ -8,6 +8,8 @@ import numpy as np
 import datetime
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 # exception handling variable 
@@ -167,30 +169,46 @@ def enter_data():
     elif len(sell) > len(buy):
         sell.pop()
     
+    # create plot 
+    fig = Figure(figsize=(12,5), dpi=90)
+    plot1 = fig.add_subplot(111)
     
-    # plot 
-    plt.figure(figsize=(12,5))
+    """plt.figure(figsize=(12,5))
     plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
     plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
     plt.plot(data['Adj Close'], alpha=.07, label=security)
-
+"""
 
     # if checkbox is selected, plot s&p
     if showSandP == "Show S&P":
         dfSANDP = yf.download('SPY', start=startDate, end=endDate)
-        plt.plot(dfSANDP['Adj Close'], alpha = .01, label="S&P")
-        plt.legend()
+        plot1.plot(dfSANDP['Adj Close'], alpha = .75, label="S&P")
+        #plt.plot(dfSANDP['Adj Close'], alpha = .01, label="S&P")
+        #plt.legend()
 
     # calculate profits
     Profits = (data.loc[sell].Open.values - data.loc[buy].Open.values)/data.loc[buy].Open.values
     
     # winning rate 
     wins = [i for i in Profits if i >0]
-    len(wins)/ len(Profits)
+    winRate = len(wins)/ len(Profits)
+
+    # show profit and win rate
+    profitLabel = tk.Label(frame, text="Profit: "+str(sum(Profits)))
+    winRateLabel = tk.Label(frame, text="Win Rate: "+str(winRate))
+    profitLabel.grid(row=4, column=0)
+    winRateLabel.grid(row=5,column=0)
 
     # show graph 
-    plt.show()
-    #plt.savefig("plot.png")
+    plot1.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
+    plot1.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
+    plot1.plot(data['Adj Close'], alpha=1, label=security)
+    plot1.legend()
+
+    canvas1 = FigureCanvasTkAgg(fig, frame)
+    canvas1.draw()
+    canvas1.get_tk_widget().grid(row=3, column=0)
+
     
     
 #####################
