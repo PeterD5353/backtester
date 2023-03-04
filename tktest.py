@@ -173,11 +173,7 @@ def enter_data():
     fig = Figure(figsize=(12,5), dpi=90)
     plot1 = fig.add_subplot(111)
     
-    """plt.figure(figsize=(12,5))
-    plt.scatter(data.loc[buy].index, data.loc[buy]['Adj Close'], marker = '^', c='g')
-    plt.scatter(data.loc[sell].index, data.loc[buy]['Adj Close'], marker = 'v', c='r')
-    plt.plot(data['Adj Close'], alpha=.07, label=security)
-"""
+
 
     # if checkbox is selected, plot s&p
     if showSandP == "Show S&P":
@@ -208,6 +204,7 @@ def enter_data():
     canvas1 = FigureCanvasTkAgg(fig, frame)
     canvas1.draw()
     canvas1.get_tk_widget().grid(row=3, column=0)
+
 
     
     
